@@ -1,0 +1,24 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: observability-monitoring-toolkit-instrumentation
+spec:
+  exporter:
+    endpoint: http://otel-collector:4317
+  propagators:
+    - tracecontext
+    - baggage
+  env:
+    - name: OTEL_SERVICE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.labels['app.kubernetes.io/name']
+  python:
+    env:
+      - name: OTEL_TRACES_EXPORTER
+        value: otlp
+  nodejs:
+    env:
+      - name: OTEL_TRACES_EXPORTER
+        value: otlp
+  # Auto-injects for Node/Python workloads

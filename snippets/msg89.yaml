@@ -1,0 +1,8 @@
+- alert: HighCardinalityWarning
+  expr: count(group by (label) (count_over_time({job!=""} [1h]))) > 1000
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "High cardinality detected in Loki logs"
+    description: "Review labels (model, region, thermal_mode). Consider dropping high-cardinality ones."

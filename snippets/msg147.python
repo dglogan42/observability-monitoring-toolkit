@@ -1,0 +1,6 @@
+import requests
+response = requests.get("http://jaeger:16686/api/traces", params={
+    "service": "anomaly-detector",
+    "tags": "ev.battery_kwh>60"
+})
+traces = response.json()

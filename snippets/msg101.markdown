@@ -1,0 +1,1 @@
+![Step 1: Login](grafana/screenshots/01-grafana-login.png)

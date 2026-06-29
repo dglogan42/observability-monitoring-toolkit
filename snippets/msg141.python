@@ -1,0 +1,2 @@
+# When recording metric
+histogram.record(value, attributes, exemplar_trace_id=current_trace_context)

@@ -1,0 +1,4 @@
+# In otel-collector-config.yaml or env
+processors:
+  resource:
+    detectors: [env, system, process, k8s]

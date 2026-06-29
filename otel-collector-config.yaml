@@ -1,0 +1,42 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    send_batch_size: 512
+  attributes:
+    actions:
+      - key: ev.battery_kwh
+        action: insert
+        value: "default"  # overridden by app
+
+exporters:
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+  prometheus:
+    endpoint: 0.0.0.0:9090
+  debug: {}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, attributes]
+      exporters: [jaeger, debug]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [loki, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus, debug]

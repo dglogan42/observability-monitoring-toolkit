@@ -1,0 +1,96 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: omt
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+
+  backend:
+    build: ./server
+    depends_on: [db, redis, otel-collector]
+    env_file: .env
+    ports:
+      - "5000:5000"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: backend
+
+  frontend:
+    build: ./client
+    depends_on: [backend]
+    ports:
+      - "3000:3000"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: frontend
+
+  anomaly-detector:
+    build:
+      context: .
+      dockerfile: Dockerfile.anomaly
+    depends_on: [otel-collector]
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: anomaly-detector
+
+  celery-worker:
+    build: .
+    command: celery -A tasks worker --loglevel=info
+    depends_on: [redis, backend]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
+  loki:
+    image: grafana/loki:2.9.4
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:2.9.4
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:10.3.1
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.96.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
+
+volumes:
+  postgres_data:

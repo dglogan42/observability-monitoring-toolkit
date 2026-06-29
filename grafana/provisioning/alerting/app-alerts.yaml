@@ -1,0 +1,17 @@
+groups:
+  - name: app-logs
+    rules:
+      - alert: HighErrorRate
+        expr: sum(count_over_time({service="backend"} |= "error|fail" [5m])) > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High backend error rate"
+          description: "Check Sentry + Jaeger trace {{ $labels.trace_id }}"
+      - alert: ThermalAnomaly
+        expr: count_over_time({service="python"} |= "thermal|WAAPI|cooling" [10m]) > 3
+        labels:
+          severity: warning
+        annotations:
+          summary: "Liquid Cooling / Thermal anomaly detected"

@@ -1,0 +1,4 @@
+def load_views():
+    # Read JSON config → create Views dynamically
+    views = [View(instrument_name=cfg["name"], ...) for cfg in config]
+    # Reconfigure MeterProvider (with caution for production)

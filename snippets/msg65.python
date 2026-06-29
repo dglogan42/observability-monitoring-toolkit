@@ -1,0 +1,7 @@
+import plotly.graph_objects as go
+import shap
+
+# Generate interactive waterfall
+fig = shap.plots.waterfall(shap.Explanation(...), show=False)
+fig = go.Figure(fig)  # Convert to Plotly
+fig.write_html('shap_interactive.html')  # or JSON for API

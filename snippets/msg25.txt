@@ -1,0 +1,5 @@
+Ambient Temp (MetService) --> Sensor Data --> BMS Control
+                                      |
+                           [ Cooling/Heating Loops ]
+                                      |
+                    Battery Optimal Temp --> 80% Range Stability
